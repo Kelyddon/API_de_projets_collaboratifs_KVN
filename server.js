@@ -23,7 +23,7 @@ require('./src/models/project.model');
   try {
     await sequelize.authenticate();
     console.log('Connexion PostgreSQL OK');
-    await sequelize.sync({ alter: false }); // alter:true en dev si tu veux ajuster le schéma
+    await sequelize.sync({ alter: false }); 
     console.log('Synchronisation des tables terminée');
   } catch (err) {
     console.error('Échec init DB:', err);
@@ -31,7 +31,6 @@ require('./src/models/project.model');
   }
 })();
 
-// Démarrage du serveur en dehors de l’async (port inchangé)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Le serveur est en route sur http://localhost:${PORT}`);

@@ -1,10 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-// Attention: on est dans src/seed => le bon chemin vers la config est ../config/...
 const sequelize = require('../config/sequelize.config');
 
-// Modèles
 const { Project } = require('../models/project.model');
 const { Member } = require('../models/member.model');
 
@@ -13,7 +11,6 @@ async function seed({ reset = false } = {}) {
     await sequelize.authenticate();
     console.log('Connexion PostgreSQL OK');
 
-    // Optionnel mais pratique: s’assurer que les tables existent
     await sequelize.sync({ alter: false });
 
     if (reset) {
@@ -30,11 +27,11 @@ async function seed({ reset = false } = {}) {
 
     for (const p of data.projects || []) {
       const [project, wasCreated] = await Project.findOrCreate({
-        where: { name: p.name }, // name est unique dans le modèle
+        where: { name: p.name }, 
         defaults: {
           description: p.description ?? '',
           organizer: p.organizer,
-          specFile: p.specFile, // validation .pdf dans le modèle
+          specFile: p.specFile, 
         },
       });
 
