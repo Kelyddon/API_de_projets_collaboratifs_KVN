@@ -4,7 +4,7 @@ const {
   DB_DIALECT = 'postgres',
   DB_HOST = 'localhost',
   DB_PORT = 5432,
-  DB_NAME = 'travailkvr',
+  DB_NAME = 'API_de_projets_collaboratifs_KVN',
   DB_USER = 'postgres',
   DB_PASS = 'root',
   DB_LOGGING = 'false',
