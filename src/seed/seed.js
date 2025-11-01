@@ -9,14 +9,15 @@ const { Member } = require('../models/member.model');
 async function seed({ reset = false } = {}) {
   try {
     await sequelize.authenticate();
-    console.log('Connexion PostgreSQL OK');
+console.log('Connexion PostgreSQL OK');
 
-    await sequelize.sync({ alter: false });
+// Force sync to align DB schema with models for seeding
+await sequelize.sync({ alter: true });
 
-    if (reset) {
-      console.log('Reset des tables (TRUNCATE + RESTART IDENTITY)…');
-      await sequelize.query('TRUNCATE TABLE "members","projects" RESTART IDENTITY CASCADE;');
-    }
+if (reset) {
+  console.log('Reset des tables (TRUNCATE + RESTART IDENTITY)…');
+  await sequelize.query('TRUNCATE TABLE "members","projects" RESTART IDENTITY CASCADE;');
+}
 
     const dataPath = path.join(__dirname, '..', '..', 'data', 'data.json');
     const raw = fs.readFileSync(dataPath, 'utf-8');
