@@ -53,3 +53,56 @@ exports.login = async (req, res) => {
     return res.status(500).json({ message: "Erreur serveur" });
   }
 };
+
+exports.getAllMembers = async (req, res) => {
+  try {
+    const { name, role } = req.query;
+    
+    const members = await Member.findAll({
+      attributes: { exclude: ['password'] },
+      where: {
+        ...(name && { name }),
+        ...(role && { role }),
+      },
+    });
+    return res.status(200).json(members);
+  } catch (err) {
+    console.error("Erreur de recuperation des members:", err);
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+// Modifie un membre
+exports.updateMember = async (req, res) => {
+  try {
+    const memberId = req.params.id;
+    const { name, email, password, role, projectId } = req.body;
+    const member = await Member.findByPk(memberId);
+
+    if (!member) {
+      return res.status(404).json({ message: `Membre ${memberId} introuvable` });
+    }
+    await member.update({ name, email, password, role, projectId });
+    const { password: _, ...safe } = member.toJSON();
+    return res.status(200).json(safe);
+  } catch (err) {
+    console.error("Erreur de mise à jour du membre:", err);
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+// Supprime un membre
+exports.deleteMember = async (req, res) => {
+  try {
+    const memberId = req.params.id;
+    const member = await Member.findByPk(memberId);
+    if (!member) {
+      return res.status(404).json({ message: `Membre ${memberId} introuvable` });
+    }
+    await member.destroy();
+    return res.status(200).json({ message: `Membre ${memberId} supprimé` });
+  } catch (err) {
+    console.error("Erreur de suppression du membre:", err);
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+};

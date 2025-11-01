@@ -16,8 +16,10 @@
 const express = require('express');
 const router = express.Router();
 const projectController = require('../controllers/project.controller');
+const upload = require('../middlewares/upload.middleware'); // <- AJOUT
 
-// Créer (avec PDF obligatoire), Lister, Lire
+// Créer (PDF requis), Lister, Détail
+router.post('/', upload.single('image'), projectController.createProject);
 router.get('/', projectController.getAllProjects);
 router.get('/:id', projectController.getProjectById);
 

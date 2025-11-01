@@ -9,6 +9,7 @@ app.use(express.urlencoded({ extended: true }));
 // Monte les routes depuis src/
 app.use('/api/projects', require('./src/routes/project.routes'));
 app.use('/api/auth', require('./src/routes/auth.routes'));
+app.use('/api/members', require('./src/routes/members.routes'));
 
 // Init Sequelize (inchangé)
 const sequelize = require('./src/config/sequelize.config');
