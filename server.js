@@ -1,23 +1,20 @@
+
 const express = require('express');
 const path = require('path');
-
-// const projectsRouter = require('./routes/projects.routes');
-// const usersRouter = require('./routes/users.routes');
-// const authRouter = require('./routes/auth.routes');
-
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Monte les routes depuis src/
+app.use('/api/projects', require('./src/routes/project.routes'));
+app.use('/api/auth', require('./src/routes/auth.routes'));
 
-// app.use('/api/projects', projectsRouter);
-// app.use('/api/users', usersRouter);
-// app.use('/api/auth', authRouter);
+// Init Sequelize (inchangé)
 const sequelize = require('./src/config/sequelize.config');
 require('./src/models/member.model');
 require('./src/models/project.model');
+
 
 (async () => {
   try {

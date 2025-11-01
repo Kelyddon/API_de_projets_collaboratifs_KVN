@@ -12,7 +12,20 @@ Member.init({
   role: {
     type: DataTypes.STRING(40),
     allowNull: false,
+    defaultValue: 'Member', // <- default to avoid null
     validate: { notEmpty: true },
+  },
+  // If you use auth, keep these in the model.
+  // If they are already present in your file, keep your existing version.
+  email: {
+    type: DataTypes.STRING(150),
+    allowNull: true, // keep nullable so seeding works without email
+    unique: true,
+    validate: { isEmail: true },
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: true, // keep nullable so seeding works without password
   },
 }, {
   sequelize,
