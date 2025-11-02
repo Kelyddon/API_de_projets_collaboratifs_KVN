@@ -11,7 +11,6 @@ async function seed({ reset = false } = {}) {
     await sequelize.authenticate();
 console.log('Connexion PostgreSQL OK');
 
-// Force sync to align DB schema with models for seeding
 await sequelize.sync({ alter: true });
 
 if (reset) {

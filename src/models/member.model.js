@@ -1,7 +1,25 @@
 const sequelize = require("../config/sequelize.config");
 const { Model, DataTypes } = require("sequelize");
+const bcrypt = require('bcrypt');
 
-class Member extends Model {}
+class Member extends Model {
+  async passwordMatches(plain) {
+    if (!this.password) return false;
+
+    const isBcrypt = /^\$2[aby]\$/.test(this.password);
+
+    if (!isBcrypt) {
+      const ok = plain === this.password;
+      if (ok) {
+        this.password = await bcrypt.hash(plain, 10);
+        try { await this.save(); } catch (_) {  }
+      }
+      return ok;
+    }
+
+    return bcrypt.compare(plain, this.password);
+  }
+}
 
 Member.init({
   name: {
@@ -12,26 +30,36 @@ Member.init({
   role: {
     type: DataTypes.STRING(40),
     allowNull: false,
-    defaultValue: 'Member', // <- default to avoid null
+    defaultValue: 'user',
     validate: { notEmpty: true },
   },
-  // If you use auth, keep these in the model.
-  // If they are already present in your file, keep your existing version.
   email: {
     type: DataTypes.STRING(150),
-    allowNull: true, // keep nullable so seeding works without email
+    allowNull: true,
     unique: true,
     validate: { isEmail: true },
   },
   password: {
     type: DataTypes.STRING,
-    allowNull: true, // keep nullable so seeding works without password
+    allowNull: true,
   },
 }, {
   sequelize,
   modelName: "Member",
   tableName: "members",
   timestamps: true,
+  hooks: {
+    beforeCreate: async (member) => {
+      if (member.password) {
+        member.password = await bcrypt.hash(member.password, 10);
+      }
+    },
+    beforeUpdate: async (member) => {
+      if (member.changed('password') && member.password) {
+        member.password = await bcrypt.hash(member.password, 10);
+      }
+    },
+  },
 });
 
 module.exports = { Member };

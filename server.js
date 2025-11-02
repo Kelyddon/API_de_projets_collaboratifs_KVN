@@ -1,4 +1,3 @@
-
 const express = require('express');
 const path = require('path');
 const app = express();
@@ -10,8 +9,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/projects', require('./src/routes/project.routes'));
 app.use('/api/auth', require('./src/routes/auth.routes'));
 app.use('/api/members', require('./src/routes/members.routes'));
+app.use('/api/admin', require('./src/routes/admin.routes'));
 
-// Init Sequelize (inchangé)
+
+// Init Sequelize 
 const sequelize = require('./src/config/sequelize.config');
 require('./src/models/member.model');
 require('./src/models/project.model');

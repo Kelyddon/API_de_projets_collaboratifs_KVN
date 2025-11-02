@@ -14,7 +14,7 @@ exports.createProject = async (req, res) => {
       return res.status(415).json({ message: "Un fichier PDF (champ 'image') est requis" });
     }
 
-    const specFile = req.file.filename; // nom du fichier enregistré dans public/uploads
+    const specFile = req.file.filename; 
 
     const project = await Project.create({ name, description, organizer, specFile });
     return res.status(201).json(project);
@@ -84,7 +84,6 @@ exports.deleteProject = async (req, res) => {
     const specFile = project.specFile;
     await project.destroy();
 
-    // Supprimer le fichier associé du dossier public/uploads (silencieux en cas d'erreur)
     if (specFile) {
       const filePath = path.join(__dirname, '..', '..', 'public', 'uploads', specFile);
       fs.unlink(filePath, (err) => {

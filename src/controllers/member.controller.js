@@ -1,13 +1,16 @@
 const { Member } = require("../models/member.model");
 const { Project } = require("../models/project.model");
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, projectId, role } = req.body;
-
+    let { name, email, password, projectId, role } = req.body; 
     if (!name || !email || !password || !projectId) {
       return res.status(400).json({ message: "name, email, password et projectId sont requis" });
     }
+
+    email = String(email).trim().toLowerCase();
 
     // Vérifie que le projet existe
     const project = await Project.findByPk(projectId);
@@ -15,20 +18,23 @@ exports.register = async (req, res) => {
       return res.status(404).json({ message: `Projet ${projectId} introuvable` });
     }
 
-    // Optionnel: vérifier l’unicité de l’email si vous l’imposez
-    // const existing = await Member.findOne({ where: { email } });
-    // if (existing) return res.status(409).json({ message: "Email déjà utilisé" });
+    const existing = await Member.findOne({ where: { email } });
+    if (existing) return res.status(409).json({ message: "Email déjà utilisé" });
+
+    // Rôle: par défaut "user", sauf si demandé "admin"
+    const requestedRole = String(role || '').toLowerCase();
+    const assignedRole = requestedRole === 'admin' ? 'admin' : 'user';
 
     const member = await Member.create({
       name,
       email,
-      password,          // hash plus tard si besoin
-      role: role || undefined, // si non fourni, prendra la valeur par défaut du modèle
+      password,               // TODO: hash plus tard
+      role: assignedRole,
       projectId,
     });
 
     const { password: _, ...safe } = member.toJSON();
-    return res.status(200).json(safe);
+    return res.status(201).json(safe);
   } catch (err) {
     console.error("Register error:", err);
     return res.status(500).json({ message: "Erreur serveur" });
@@ -37,17 +43,23 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const member = await Member.findOne({ where: { email } });
+    let { email, password } = req.body;
+    email = String(email || '').trim().toLowerCase();
 
-    // Si vous avez une méthode passwordMatches (avec bcrypt), utilisez-la ici.
-    // En l’état, on fait une comparaison simple si pas de hashing.
-    if (!member || member.password !== password) {
-      return res.status(401).json({ message: "Identifiant ou mot de passe invalide" });
-    }
+    const member = await Member.findOne({ where: { email } });
+    console.log('[LOGIN] email:', email, 'found?', !!member, 'hasPassword?', !!(member && member.password));
+    if (!member) return res.status(401).json({ message: "Identifiant ou mot de passe invalide" });
+
+    const matches = await member.passwordMatches(password);
+    console.log('[LOGIN] matches?', matches);
+    if (!matches) return res.status(401).json({ message: "Identifiant ou mot de passe invalide" });
 
     const { password: _, ...safe } = member.toJSON();
-    return res.status(200).json({ message: "Vous êtes bien authentifié", member: safe });
+    if (member.role === 'admin') {
+      const token = jwt.sign({ id: member.id, email: member.email, role: member.role, name: member.name }, JWT_SECRET, { expiresIn: '1h' });
+      return res.status(200).json({ message: "Vous êtes bien authentifié (admin)", token, member: safe });
+    }
+    return res.status(200).json({ message: "Vous êtes bien authentifié (utilisateur)", member: safe });
   } catch (err) {
     console.error("Login error:", err);
     return res.status(500).json({ message: "Erreur serveur" });

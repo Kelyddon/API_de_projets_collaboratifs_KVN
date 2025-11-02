@@ -1,10 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const memberController = require("../controllers/member.controller");
+const { verifyToken, requireRole } = require("../middlewares/auth.middleware");
 
-// CRUD et filtres
+// Lister 
 router.get("/", memberController.getAllMembers);
-router.put("/:id", memberController.updateMember);
-router.delete("/:id", memberController.deleteMember);
+
+// Modifier un membre (ADMIN uniquement)
+router.put("/:id", verifyToken, requireRole('admin'), memberController.updateMember);
+
+// Supprimer un membre (ADMIN uniquement)
+router.delete("/:id", verifyToken, requireRole('admin'), memberController.deleteMember);
 
 module.exports = router;
