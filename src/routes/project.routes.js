@@ -16,11 +16,12 @@
 const express = require('express');
 const router = express.Router();
 const projectController = require('../controllers/project.controller');
-const upload = require('../middlewares/upload.middleware'); // <- AJOUT
+const upload = require('../middlewares/upload.middleware');
 
-// Créer (PDF requis), Lister, Détail
 router.post('/', upload.single('image'), projectController.createProject);
 router.get('/', projectController.getAllProjects);
 router.get('/:id', projectController.getProjectById);
+router.put('/:id', upload.single('image'), projectController.updateProject);
+router.delete('/:id', projectController.deleteProject);
 
 module.exports = router;
